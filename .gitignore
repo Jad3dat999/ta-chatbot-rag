@@ -1,0 +1,103 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data - Raw files (users provide their own)
+data/raw/slides/*.pdf
+data/raw/assignment/*.pdf
+data/raw/raw_qa.txt
+data/chromadb/
+
+# Keep processed data and splits for demonstration
+# (These are included in the repo)
+
+# Models
+models/*
+!models/.gitkeep
+*.bin
+*.safetensors
+*.pth
+*.pt
+
+# Logs
+*.log
+logs/
+runs/
+tensorboard/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# WandB
+wandb/
+
+# Checkpoints
+checkpoints/
+
+# Large model files
+*.zip
+*.tar.gz
+
+# Google Drive files
+*.gdoc
+*.gslides
+*.gsheet
+
+# Old/backup data
+data/processed_old/
+
+# Personal files
+COMP576_Final_Proposal.pdf
+FinalPre_Poster.*
+
+# PowerPoint
+*.pptx
+
+
+# Course data is private — never commit it
+data/*
+!data/README.md

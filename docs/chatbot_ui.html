@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELEC 576 TA Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .chat-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        .example-questions {
+            margin-bottom: 25px;
+        }
+
+        .example-questions h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        #questionInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        #questionInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .settings-row label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .settings-row input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .section-header .icon {
+            font-size: 1.5rem;
+        }
+
+        .answer-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .answer-box .question {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .answer-box .answer {
+            color: #333;
+        }
+
+        .documents-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .document-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .document-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.1);
+        }
+
+        .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .doc-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .doc-type.assignment {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .doc-type.lecture {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .doc-type.piazza {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .doc-score {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+
+        .doc-source {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .doc-preview {
+            color: #555;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .input-wrapper {
+                flex-direction: column;
+            }
+
+            .settings-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 ELEC 576 TA Chatbot</h1>
+            <p>Retrieval-Augmented Generation System for Course-Specific Q&A</p>
+        </div>
+
+        <div class="main-content">
+            <div class="chat-section">
+                <!-- Stats Bar -->
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value">805</div>
+                        <div class="stat-label">Total Documents</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">677</div>
+                        <div class="stat-label">📊 Lecture Slides</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">15</div>
+                        <div class="stat-label">📝 Assignments</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">113</div>
+                        <div class="stat-label">💬 Piazza Posts</div>
+                    </div>
+                </div>
+
+                <!-- Example Questions -->
+                <div class="example-questions">
+                    <h3>💡 Try these example questions:</h3>
+                    <div class="example-chips">
+                        <div class="chip" onclick="fillQuestion('What are the requirements for assignment 1?')">📝 Assignment requirements</div>
+                        <div class="chip" onclick="fillQuestion('How does backpropagation work?')">🧠 Explain backpropagation</div>
+                        <div class="chip" onclick="fillQuestion('What is gradient descent?')">📊 Gradient descent definition</div>
+                        <div class="chip" onclick="fillQuestion('How do I submit Assignment 2?')">📤 Submission instructions</div>
+                        <div class="chip" onclick="fillQuestion('Why is my loss NaN?')">🐛 Debug NaN loss</div>
+                    </div>
+                </div>
+
+                <!-- Input Section -->
+                <div class="input-section">
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="questionInput" 
+                            placeholder="Ask a question about the course (assignments, lectures, concepts)..."
+                            onkeypress="handleKeyPress(event)"
+                        >
+                        <button class="btn" onclick="askQuestion()" id="askBtn">
+                            Ask Question
+                        </button>
+                    </div>
+                    <div class="settings-row">
+                        <label>
+                            📚 Documents to retrieve:
+                            <input type="number" id="topK" value="5" min="1" max="10">
+                        </label>
+                        <label>
+                            <input type="checkbox" id="filterSlides" checked>
+                            Filter slides for assignment queries
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 15px; color: #666;">Processing your question...</p>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section" id="results">
+                    <!-- Answer -->
+                    <div class="section-header">
+                        <span class="icon">💬</span>
+                        <h2>Generated Answer</h2>
+                    </div>
+                    <div class="answer-box" id="answerBox">
+                        <div class="question" id="displayQuestion"></div>
+                        <div class="answer" id="displayAnswer"></div>
+                    </div>
+
+                    <!-- Retrieved Documents -->
+                    <div class="section-header">
+                        <span class="icon">📚</span>
+                        <h2>Retrieved Documents</h2>
+                    </div>
+                    <div class="documents-list" id="documentsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for different question types
+        const mockResponses = {
+            "assignment 1": {
+                question: "What are the requirements for assignment 1?",
+                answer: "Assignment 1 is due Oct 7, 2025 at 11:59 PM via Canvas. You need to:<br><br>1. <strong>Submit report as PDF</strong> - Include all plots, analysis, and answers to written questions<br>2. <strong>Submit code as ZIP file</strong> - All Python files with clear comments<br>3. <strong>Problem 1:</strong> Implement backpropagation for 3-layer neural network (forward pass, backward pass, gradient checking)<br>4. <strong>Problem 2:</strong> Train CNN on MNIST dataset (architecture: Conv→ReLU→MaxPool→Conv→ReLU→MaxPool→FC→FC)<br><br>See the Assignment 1 PDF on Canvas for complete specifications and grading rubric. You have 2 late days available if needed.",
+                documents: [
+                    { type: "assignment", score: 1.1035, source: "Assignment 1: Overview and Requirements", preview: "ELEC 576 / COMP 576 – Fall 2025 Assignment 1 Due: Oct 7, 2025, 11:59 p.m. via Canvas. Submit two files: (1) report.pdf with all plots and written responses, (2) code.zip with all Python implementations..." },
+                    { type: "assignment", score: 0.9033, source: "Assignment 1: Problem 1 - Backpropagation", preview: "1. Backpropagation in a Simple Neural Network. You will implement backpropagation for a 3-layer neural network. Implement forward pass to compute activations and loss. Then implement backward pass to compute gradients..." },
+                    { type: "assignment", score: 0.7739, source: "Assignment 1: Problem 2 - CNN on MNIST", preview: "2. Training a Simple Deep Convolutional Network on MNIST. Implement a CNN with the following architecture: Conv(32 filters, 3×3) → ReLU → MaxPool(2×2) → Conv(64 filters, 3×3) → ReLU → MaxPool(2×2) → FC(128) → ReLU → FC(10)..." },
+                    { type: "assignment", score: 0.7627, source: "Assignment 1: Submission Instructions", preview: "Submission: Upload to Canvas by the deadline. Format: report.pdf (all answers, plots, analysis) and code.zip (all .py files). Late policy: 2 late days available, 20% penalty per day after that..." },
+                    { type: "piazza", score: 0.2878, source: "piazza.com/class/.../post/46", preview: "Q: Do we need to implement batch gradient descent or can we use single samples? A: Either is fine, but batch processing (mini-batches of 32-64) will train faster and more stable..." }
+                ]
+            },
+            "backpropagation": {
+                question: "How does backpropagation work?",
+                answer: "Backpropagation is an algorithm for training neural networks by efficiently computing gradients of the loss function with respect to all parameters [Lecture 3, Slide 24]. <br><br>It works through two main phases:<br><br><strong>1. Forward Pass:</strong> Input data flows through the network, computing activations layer by layer until producing the final output and loss.<br><br><strong>2. Backward Pass:</strong> Gradients flow backwards using the chain rule. Starting from the loss, we compute ∂Loss/∂output, then multiply by local gradients at each layer to get ∂Loss/∂weights. This \"backpropagates\" error signals through the network.<br><br><strong>Key insight:</strong> The chain rule allows us to decompose complex derivatives into simple local computations at each layer [Lecture 3, Slide 25]. <br><br><strong>Practical tip:</strong> Always cache activations during forward pass - you'll need them for computing gradients in the backward pass [Piazza #89].",
+                documents: [
+                    { type: "lecture", score: 1.0097, source: "Lecture 3: Slide 37 - Backpropagation Algorithm", preview: "Backpropagation computes gradients via the chain rule. Forward pass: compute and cache all activations. Backward pass: compute gradients recursively from output to input. ∂L/∂W_l = ∂L/∂a_l × ∂a_l/∂W_l..." },
+                    { type: "lecture", score: 0.9954, source: "Lecture 3: Slide 40 - Chain Rule Visualization", preview: "The chain rule allows gradient computation through composed functions. For f(g(x)), derivative is f'(g(x)) × g'(x). In neural networks, this cascades through layers: ∂Loss/∂W1 = ∂Loss/∂a3 × ∂a3/∂a2 × ∂a2/∂W1..." },
+                    { type: "lecture", score: 0.9789, source: "Lecture 3: Slide 39 - Computational Graph", preview: "Computational graphs represent neural networks as directed acyclic graphs. Nodes are operations, edges carry values (forward) and gradients (backward). This structure makes automatic differentiation straightforward..." },
+                    { type: "assignment", score: 0.7234, source: "Assignment 1: Problem 1 - Backpropagation Implementation", preview: "Implement backpropagation for a 3-layer network. Cache activations during forward pass. In backward pass, compute gradients layer by layer using chain rule. Verify with gradient checking (numerical gradients)..." },
+                    { type: "piazza", score: 0.6543, source: "piazza.com/class/.../post/89", preview: "For backpropagation implementation, remember to: 1) Cache all intermediate activations during forward pass, 2) Initialize gradient accumulation, 3) Apply chain rule from output to input, 4) Don't forget to include bias gradients..." }
+                ]
+            },
+            "gradient descent": {
+                question: "What is gradient descent?",
+                answer: "Gradient descent is an optimization algorithm used to minimize the loss function in neural networks by iteratively adjusting parameters [Lecture 2, Slide 15].<br><br><strong>How it works:</strong><br>1. Compute the gradient ∇L(θ) of the loss with respect to parameters<br>2. Update parameters in the opposite direction: θ_new = θ_old - α × ∇L(θ)<br>3. Repeat until convergence<br><br><strong>Learning rate α</strong> controls step size [Lecture 2, Slide 16]:<br>• Too large → overshooting, divergence, oscillation<br>• Too small → slow convergence, stuck in local minima<br>• Typical starting values: 0.001 - 0.01<br><br><strong>Variants:</strong><br>• Batch GD: Uses entire dataset (slow but stable)<br>• Stochastic GD: Uses single sample (fast but noisy)<br>• Mini-batch GD: Uses small batches (best trade-off)<br><br><strong>Practical tip:</strong> For your assignments, start with lr=0.01 and normalize your gradients [Piazza #45].",
+                documents: [
+                    { type: "lecture", score: 0.8932, source: "Lecture 2: Slide 15 - Gradient Descent Introduction", preview: "Gradient descent is an optimization algorithm that iteratively adjusts parameters by moving in the direction of steepest descent of the loss function. The gradient ∇L points in direction of maximum increase, so we move opposite: θ ← θ - α∇L..." },
+                    { type: "lecture", score: 0.8421, source: "Lecture 2: Slide 16 - Learning Rate Selection", preview: "Learning rate α controls step size in gradient descent. Too large → divergence, too small → slow convergence. Adaptive methods (Adam, RMSprop) adjust learning rate automatically. For SGD, typical starting values: 0.001 - 0.01..." },
+                    { type: "lecture", score: 0.7865, source: "Lecture 2: Slide 18 - GD Variants", preview: "Three main variants: (1) Batch GD - uses full dataset, slow but smooth convergence; (2) Stochastic GD - uses single sample, fast but noisy; (3) Mini-batch GD - uses small batches (32-256), best balance of speed and stability..." },
+                    { type: "piazza", score: 0.6712, source: "piazza.com/class/.../post/45", preview: "For gradient descent in Assignment 2, remember to normalize your gradients and use lr=0.01 as starting point. If loss oscillates, reduce lr by factor of 10. If training is too slow, increase by 2-3x. Monitor loss curve!" },
+                    { type: "assignment", score: 0.5234, source: "Assignment 2: Problem 1 - Optimization", preview: "Implement mini-batch gradient descent with batch size 64. Use learning rate 0.01 for first 5 epochs, then decay by 0.1 every 5 epochs. Compare convergence speed vs batch size (32, 64, 128)..." }
+                ]
+            },
+            "submit assignment 2": {
+                question: "How do I submit Assignment 2?",
+                answer: "To submit Assignment 2, upload two files to Canvas by <strong>November 6, 2025, 11:59 PM</strong>:<br><br><strong>1. report.pdf</strong><br>• Include all required plots and figures<br>• Written analysis for each problem<br>• Answer all discussion questions<br>• Clearly label each section<br><br><strong>2. code.zip</strong><br>• All Python (.py) files<br>• Include README.txt explaining how to run each part [Piazza #78]<br>• Organize by problem: problem1.py, problem2.py, etc.<br>• Include any required data files or dependencies<br><br><strong>Important notes:</strong><br>• Canvas submission portal closes at 11:59 PM sharp<br>• You have 2 late days available (20% penalty per day after)<br>• Double-check all files are included before submitting<br>• Keep a backup copy of your submission<br><br>See the full submission requirements in Assignment 2 PDF on Canvas [Assignment 2: Submission Instructions].",
+                documents: [
+                    { type: "assignment", score: 1.2345, source: "Assignment 2: Submission Instructions", preview: "Submit via Canvas by Nov 6, 11:59 PM. Upload: (1) report.pdf with all plots, analysis, and discussion answers; (2) code.zip with all .py files. File naming: firstname_lastname_assignment2.pdf and firstname_lastname_code.zip..." },
+                    { type: "piazza", score: 0.4321, source: "piazza.com/class/.../post/78", preview: "Submission tip: Remember to include README.txt in your code.zip explaining how to run each part. Also specify any dependencies and Python version used. TAs will run your code for grading, so make sure it's reproducible!" },
+                    { type: "assignment", score: 0.3876, source: "Assignment 2: Overview", preview: "ELEC 576 / COMP 576 – Fall 2025 Assignment 2. Due: November 6, 2025, 11:59 PM via Canvas. This assignment covers convolutional neural networks, optimization techniques, and regularization methods..." },
+                    { type: "piazza", score: 0.2987, source: "piazza.com/class/.../post/82", preview: "Late policy reminder: You have 2 late days total for the semester. After that, 20% penalty per day late. Weekend days count as regular days. Submit early to avoid last-minute technical issues!" }
+                ]
+            },
+            "nan loss": {
+                question: "Why is my loss NaN in backpropagation?",
+                answer: "NaN (Not a Number) loss typically occurs due to numerical instability during training. Here are the main causes and solutions:<br><br><strong>1. Exploding Gradients</strong> [Piazza #92]<br>• Cause: Learning rate too high, causing parameter updates to blow up<br>• Solution: Reduce learning rate (try 10× smaller) or use gradient clipping<br>• Code: <code>torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)</code><br><br><strong>2. Division by Zero</strong> [Lecture 3, Slide 32]<br>• Cause: Dividing by very small numbers in normalization layers<br>• Solution: Add epsilon (1e-8) to denominators<br>• Example: <code>normalized = x / (std + 1e-8)</code><br><br><strong>3. Log of Zero/Negative</strong><br>• Cause: Taking log(0) or log(negative) in loss functions<br>• Solution: Clip inputs to logarithm: <code>torch.log(x + 1e-8)</code><br><br><strong>4. Overflow in Softmax</strong><br>• Cause: Very large logits causing exp() overflow<br>• Solution: Use LogSoftmax instead of Softmax + log<br><br><strong>Debugging strategy:</strong> Print loss after each batch to identify exactly when NaN appears [Piazza #104].",
+                documents: [
+                    { type: "piazza", score: 0.8123, source: "piazza.com/class/.../post/92", preview: "NaN loss usually means: (1) exploding gradients - check your learning rate, try reducing by 10x; (2) division by zero in normalization/softmax layers; (3) log(0) or log(negative) in cross-entropy loss; (4) numeric overflow in exponentials..." },
+                    { type: "lecture", score: 0.7321, source: "Lecture 3: Slide 32 - Numerical Stability", preview: "Numerical stability is critical in deep learning. Always add epsilon (1e-8) to denominators to prevent division by zero. Use numerically stable implementations (LogSoftmax instead of log(Softmax)). Clip gradients to prevent explosions..." },
+                    { type: "piazza", score: 0.6832, source: "piazza.com/class/.../post/104", preview: "Fixed my NaN issue by clipping gradients: torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0). Also reduced learning rate from 0.1 to 0.01. Now training is stable! Print loss every batch to catch NaN early..." },
+                    { type: "lecture", score: 0.5432, source: "Lecture 5: Slide 28 - Gradient Clipping", preview: "Gradient clipping prevents exploding gradients. Two methods: (1) Clip by value: gradient = max(min(gradient, threshold), -threshold); (2) Clip by norm: if ||g|| > threshold, scale g to have norm = threshold. Use max_norm=1.0 as default..." },
+                    { type: "piazza", score: 0.4123, source: "piazza.com/class/.../post/97", preview: "Debug checklist for NaN loss: 1) Check input data for NaN/Inf, 2) Verify loss function implementation, 3) Try smaller learning rate, 4) Add gradient clipping, 5) Check for division by zero, 6) Use mixed precision carefully..." }
+                ]
+            }
+        };
+
+        function fillQuestion(question) {
+            document.getElementById('questionInput').value = question;
+            document.getElementById('questionInput').focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+
+        function askQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                alert('Please enter a question!');
+                return;
+            }
+
+            // Show loading, hide results
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('askBtn').disabled = true;
+
+            // Simulate API call delay
+            setTimeout(() => {
+                displayResults(question);
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('results').classList.add('active');
+                document.getElementById('askBtn').disabled = false;
+            }, 1500);
+        }
+
+        function displayResults(question) {
+            // Find best matching mock response
+            let response = null;
+            const lowerQuestion = question.toLowerCase();
+            
+            if (lowerQuestion.includes('assignment 1') || lowerQuestion.includes('hw 1')) {
+                response = mockResponses["assignment 1"];
+            } else if (lowerQuestion.includes('backpropagation') || lowerQuestion.includes('backprop')) {
+                response = mockResponses["backpropagation"];
+            } else if (lowerQuestion.includes('gradient descent')) {
+                response = mockResponses["gradient descent"];
+            } else if (lowerQuestion.includes('submit') || lowerQuestion.includes('submission')) {
+                response = mockResponses["submit assignment 2"];
+            } else if (lowerQuestion.includes('nan') || lowerQuestion.includes('loss')) {
+                response = mockResponses["nan loss"];
+            } else {
+                // Default generic response
+                response = {
+                    question: question,
+                    answer: "I found relevant information about your question in the course materials. This is a mock response - in the full system, the retriever would search across 805 documents and the generator would synthesize a comprehensive answer based on the retrieved context.<br><br>Try one of the example questions above to see more detailed responses!",
+                    documents: [
+                        { type: "lecture", score: 0.7234, source: "Lecture 4: Slide 23", preview: "This is a sample document preview. The actual system would display relevant content from course materials..." },
+                        { type: "assignment", score: 0.6543, source: "Assignment 3: Problem 2", preview: "Another sample document showing how multiple sources are retrieved and displayed..." },
+                        { type: "piazza", score: 0.5432, source: "piazza.com/class/.../post/56", preview: "Student discussions and TA responses would also be included in the context..." }
+                    ]
+                };
+            }
+
+            // Display question and answer
+            document.getElementById('displayQuestion').textContent = question;
+            document.getElementById('displayAnswer').innerHTML = response.answer;
+
+            // Display documents
+            const docsList = document.getElementById('documentsList');
+            docsList.innerHTML = '';
+            
+            const topK = Math.min(parseInt(document.getElementById('topK').value), response.documents.length);
+            
+            for (let i = 0; i < topK; i++) {
+                const doc = response.documents[i];
+                const docCard = document.createElement('div');
+                docCard.className = 'document-card';
+                docCard.innerHTML = `
+                    <div class="doc-header">
+                        <span class="doc-type ${doc.type}">${doc.type === 'assignment' ? '📝 Assignment' : doc.type === 'lecture' ? '📊 Lecture' : '💬 Piazza'}</span>
+                        <span class="doc-score">Score: ${doc.score.toFixed(4)}</span>
+                    </div>
+                    <div class="doc-source">${doc.source}</div>
+                    <div class="doc-preview">${doc.preview}</div>
+                `;
+                docsList.appendChild(docCard);
+            }
+        }
+    </script>
+</body>
+</html>
+
